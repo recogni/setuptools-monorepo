@@ -1,0 +1,5 @@
+.tox
+.eggs
+build
+*.egg-info
+venv
