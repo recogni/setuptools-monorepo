@@ -27,8 +27,8 @@ Install the package. This will trigger the test_script via setup() keywords. Try
 3) with file:// URL
 
   $ pip3 install --quiet ./test_package
-  $ cat test_script/entrypoint_call.txt
-  value1=1 value2=some
+  $ pip3 show test-package | grep '^Summary:'
+  Summary: value1=1 value2=some
   $ pip3 uninstall --quiet --yes test-package
 
   $ pip3 install --quiet "test-package @ git+file://localhost$(realpath .)#subdirectory=test_package"
