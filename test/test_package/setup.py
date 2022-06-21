@@ -1,11 +1,11 @@
-import glob
+from glob import glob
 import os
 
 from setuptools import setup
 
 if __name__ == '__main__':
     tox_dist_dir = os.environ.get('TOX_DISTDIR')
-    package_zip = glob.glob(f'{tox_dist_dir}/setuptools-monorepo-*.zip')
+    package_archive = glob(f'{tox_dist_dir}/setuptools-monorepo-*.tar.gz')[0]
 
     setup(
         monorepo_call={
@@ -15,5 +15,5 @@ if __name__ == '__main__':
                 'value2': 'some',
             },
         },
-        setup_requires=['setuptools-monorepo @ file://' + package_zip[0]],
+        setup_requires=['setuptools-monorepo @ file://' + package_archive],
     )
