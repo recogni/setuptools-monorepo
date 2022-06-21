@@ -52,6 +52,10 @@ RUN /opt/pyenv/bin/pyenv install ${PYTHON_VERSION_37} && \
       ${PYTHON_VERSION_39} \
       ${PYTHON_VERSION_310}
 
+ARG TASKFILE_VERSION=3.13.0
+RUN wget https://github.com/go-task/task/releases/download/v${TASKFILE_VERSION}/task_linux_amd64.deb -O \
+      /opt/task_linux_amd64.deb
+
 FROM ubuntu:20.04 as test-runner
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -71,6 +75,10 @@ RUN \
       libffi7 \
       liblzma5 && \
     rm -rf /var/lib/apt/lists/*
+
+COPY --from=pyenv-builder /opt/task_linux_amd64.deb /opt/
+RUN apt install -y /opt/task_linux_amd64.deb && \
+    rm /opt/task_linux_amd64.deb
 
 ARG JENKINS_GID=2001
 ARG JENKINS_UID=2001

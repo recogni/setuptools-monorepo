@@ -1,18 +1,18 @@
-import os
-import sys
-import setuptools
-import subprocess
 import importlib.util
 import inspect
-from types import ModuleType
-from typing import List, Any, Optional, Iterable
-from dataclasses import dataclass
+import os
+import subprocess
+import sys
 from contextlib import contextmanager
+from dataclasses import dataclass
 from inspect import FullArgSpec
+from types import ModuleType
+from typing import Any, Iterable, List, Optional
 
+import setuptools
 
-SCRIPT_MARKER = 'monorepo_script.toml'
-SCRIPT_ENTRYPOINT = 'entrypoint.py'
+SCRIPT_MARKER = "monorepo_script.toml"
+SCRIPT_ENTRYPOINT = "entrypoint.py"
 
 
 @dataclass
@@ -22,30 +22,30 @@ class Script:
 
 
 def _eprint(s: str):
-    print('setuptools-monorepo: ' + s, file=sys.stderr)
+    print("setuptools-monorepo: " + s, file=sys.stderr)
 
 
 def _run_command(command: List[str], cwd: Optional[str] = None) -> subprocess.CompletedProcess:
     result = subprocess.run(command, capture_output=True, cwd=cwd)
 
     if result.returncode != 0:
-        _eprint('Command {} exited with code {}'.format(' '.join(command), result.returncode))
-        _eprint(f'stdout: {result.stdout}')
-        _eprint(f'stderr: {result.stderr}')
+        _eprint("Command {} exited with code {}".format(" ".join(command), result.returncode))
+        _eprint(f"stdout: {result.stdout}")
+        _eprint(f"stderr: {result.stderr}")
         raise RuntimeError()
 
     return result
 
 
 def _get_repo_root() -> str:
-    result = _run_command(['git', 'rev-parse', '--show-toplevel'])
+    result = _run_command(["git", "rev-parse", "--show-toplevel"])
     return result.stdout.decode().strip()
 
 
 def _find_script_markers(repo: str) -> Iterable[str]:
-    result = _run_command(['git', '-C', repo, 'ls-files', f'**/{SCRIPT_MARKER}'], repo)
-    entries = result.stdout.decode().split('\n')
-    return (e for e in entries if e.strip() != '')
+    result = _run_command(["git", "-C", repo, "ls-files", f"**/{SCRIPT_MARKER}"], repo)
+    entries = result.stdout.decode().split("\n")
+    return (e for e in entries if e.strip() != "")
 
 
 def _discover_scripts(repo_root: str) -> Iterable[Script]:
@@ -68,19 +68,19 @@ def _discover_scripts(repo_root: str) -> Iterable[Script]:
 
 def _validate_value(value: Any) -> Optional[str]:
     if not isinstance(value, dict):
-        return 'Value should be a dict'
+        return "Value should be a dict"
 
     value_keys = value.keys()
-    valid_keys = ['target', 'args']
+    valid_keys = ["target", "args"]
     unknown_keys = [key for key in value_keys if key not in valid_keys]
 
     if unknown_keys:
-        return 'Unknown params passed: ' + ' '.join(unknown_keys)
+        return "Unknown params passed: " + " ".join(unknown_keys)
 
-    if not isinstance(value['target'], str):
+    if not isinstance(value["target"], str):
         return '"target" should be a string'
 
-    if 'args' in value and not isinstance(value['args'], dict):
+    if "args" in value and not isinstance(value["args"], dict):
         return '"args" should be a dict'
 
     return None
@@ -110,7 +110,7 @@ def _import_script(script_path: str) -> ModuleType:
     script_parent_path = os.path.abspath(os.path.join(script_dir_path, os.pardir))
 
     with _add_to_path(script_parent_path):
-        spec = importlib.util.spec_from_file_location('module', script_path)
+        spec = importlib.util.spec_from_file_location("module", script_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
@@ -120,25 +120,25 @@ def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value
     validation_result = _validate_value(value)
 
     if validation_result is not None:
-        _eprint(f'invalid argument passed: {validation_result}')
+        _eprint(f"invalid argument passed: {validation_result}")
         raise RuntimeError()
 
-    target = value['target']
-    args = value['args'] if 'args' in value else {}
+    target = value["target"]
+    args = value["args"] if "args" in value else {}
 
-    _eprint(f'Looking for monorepo script {target}')
+    _eprint(f"Looking for monorepo script {target}")
 
     repo_root = _get_repo_root()
     scripts = _discover_scripts(repo_root)
     target_script = next((s for s in scripts if s.name == target), None)
 
     if target_script is None:
-        _eprint(f'Unable to find script {target}')
+        _eprint(f"Unable to find script {target}")
         raise RuntimeError()
 
     imported_script = _import_script(target_script.path + os.path.sep + SCRIPT_ENTRYPOINT)
 
-    if not hasattr(imported_script, 'entrypoint'):
+    if not hasattr(imported_script, "entrypoint"):
         _eprint(f'Unable to find "entrypoint" function in the script "{target_script.name}"')
         raise RuntimeError()
 
