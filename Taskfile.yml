@@ -23,4 +23,5 @@ tasks:
 
   test:
     cmds:
+      - mypy .
       - ./test.sh

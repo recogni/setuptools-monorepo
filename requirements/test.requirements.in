@@ -1,3 +1,5 @@
 cram @ git+https://github.com/brodie/cram.git@d245cca
 black
 isort
+mypy
+types-setuptools

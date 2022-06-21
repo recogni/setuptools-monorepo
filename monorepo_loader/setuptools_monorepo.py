@@ -30,8 +30,8 @@ def _run_command(command: List[str], cwd: Optional[str] = None) -> subprocess.Co
 
     if result.returncode != 0:
         _eprint("Command {} exited with code {}".format(" ".join(command), result.returncode))
-        _eprint(f"stdout: {result.stdout}")
-        _eprint(f"stderr: {result.stderr}")
+        _eprint(f"stdout: {result.stdout.decode()}")
+        _eprint(f"stderr: {result.stderr.decode()}")
         raise RuntimeError()
 
     return result
@@ -111,7 +111,13 @@ def _import_script(script_path: str) -> ModuleType:
 
     with _add_to_path(script_parent_path):
         spec = importlib.util.spec_from_file_location("module", script_path)
+        if spec is None:
+            raise RuntimeError(f"Failed to load module spec: {script_path}")
+
         module = importlib.util.module_from_spec(spec)
+        if spec.loader is None:
+            raise RuntimeError("No spec loader available")
+
         spec.loader.exec_module(module)
         return module
 

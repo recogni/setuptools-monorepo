@@ -12,11 +12,21 @@ cram @ git+https://github.com/brodie/cram.git@d245cca
     # via -r requirements/test.requirements.in
 isort==5.10.1
     # via -r requirements/test.requirements.in
+mypy==0.961
+    # via -r requirements/test.requirements.in
 mypy-extensions==0.4.3
-    # via black
+    # via
+    #   black
+    #   mypy
 pathspec==0.9.0
     # via black
 platformdirs==2.5.2
     # via black
 tomli==2.0.1
-    # via black
+    # via
+    #   black
+    #   mypy
+types-setuptools==57.4.17
+    # via -r requirements/test.requirements.in
+typing-extensions==4.2.0
+    # via mypy
