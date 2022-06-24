@@ -52,7 +52,7 @@ from setuptools import setup
 
 if __name__ == '__main__':
     setup(
-        setup_requires=['setuptools-monorepo == 0.0.1'],
+        setup_requires=['setuptools-monorepo == 0.0.2'],
         monorepo_call={
             'target': 'test_script',
             'args': {
