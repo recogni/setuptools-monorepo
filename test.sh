@@ -3,7 +3,8 @@
 set -e -u -o pipefail
 shopt -s inherit_errexit
 
-readarray -t PYTHON_VERSIONS < <(cat <<EOF
+readarray -t PYTHON_VERSIONS < <(
+    cat <<EOF
 3.7
 3.8
 3.9
@@ -12,15 +13,15 @@ EOF
 )
 
 function _check_pyenv() {
-    pyenv --version >/dev/null || ( echo >&2 "pyenv is not installed" && exit 1 )
+    pyenv --version >/dev/null || (echo >&2 "pyenv is not installed" && exit 1)
 }
 
 function _get_python_version() {
     local VERSION
     VERSION=$1
 
-    pyenv versions --bare  | \
-        grep "^${VERSION}" | \
+    pyenv versions --bare |
+        grep "^${VERSION}" |
         tail -n1
 }
 
@@ -55,9 +56,9 @@ function _run() {
     # Create a list of environments like pyXY-local,pyXZ-local or,
     # when running on CI, pyXY-ci,pyXZ-ci
     local TOX_ENV
-    TOX_ENV=$(printf "%s\n" "${PYTHON_VERSIONS[@]}" | \
-        tr -d '.' | \
-        awk "{print \"py\" \$0 \"-${TOX_ENV_SUFFIX}\"}" | \
+    TOX_ENV=$(printf "%s\n" "${PYTHON_VERSIONS[@]}" |
+        tr -d '.' |
+        awk "{print \"py\" \$0 \"-${TOX_ENV_SUFFIX}\"}" |
         paste -s -d',' -)
 
     if [[ ! -f "${TOX_BINARY}" ]]; then
