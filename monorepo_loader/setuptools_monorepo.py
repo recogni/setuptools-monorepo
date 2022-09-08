@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from inspect import FullArgSpec
 from types import ModuleType
-from typing import Any, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 import setuptools
 
@@ -66,7 +66,7 @@ def _discover_scripts(repo_root: str) -> Iterable[Script]:
     return (_make_script(marker) for marker in script_markers if _is_script(marker))
 
 
-def _validate_value(value: Any) -> Optional[str]:
+def _validate_single_value(value: Any) -> Optional[str]:
     if not isinstance(value, dict):
         return "Value should be a dict"
 
@@ -84,6 +84,20 @@ def _validate_value(value: Any) -> Optional[str]:
         return '"args" should be a dict'
 
     return None
+
+
+def _validate_value(value: Any) -> Optional[str]:
+    def _validate_all() -> Optional[str]:
+        for entry in value:
+            validation_result = _validate_single_value(entry)
+            if validation_result is not None:
+                return validation_result
+        return None
+
+    if isinstance(value, Sequence):
+        return _validate_all()
+
+    return _validate_single_value(value)
 
 
 def _validate_arg(arg_name: str, args: FullArgSpec) -> Optional[str]:
@@ -122,13 +136,7 @@ def _import_script(script_path: str) -> ModuleType:
         return module
 
 
-def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value: Any):
-    validation_result = _validate_value(value)
-
-    if validation_result is not None:
-        _eprint(f"invalid argument passed: {validation_result}")
-        raise RuntimeError()
-
+def _call_script(dist: setuptools.dist.Distribution, value: Dict[str, Any]):
     target = value["target"]
     args = value["args"] if "args" in value else {}
 
@@ -169,3 +177,18 @@ def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value
             raise RuntimeError()
 
     imported_script.entrypoint(dist, **args)
+
+
+def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value: Any):
+    validation_result = _validate_value(value)
+
+    if validation_result is not None:
+        _eprint(f"invalid argument passed: {validation_result}")
+        raise RuntimeError()
+
+    if isinstance(value, Sequence):
+        for entry in value:
+            _call_script(dist, entry)
+        return
+
+    _call_script(dist, value)

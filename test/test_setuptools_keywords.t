@@ -15,9 +15,11 @@ Create the monorepo and copy packages there
   $ git init --quiet
 
   $ cp -R "${TESTDIR}/test_package" .
+  $ cp -R "${TESTDIR}/test_package_2" .
   $ cp -R "${TESTDIR}/test_script" .
+  $ cp -R "${TESTDIR}/test_script_2" .
 
-  $ git add test_package test_script
+  $ git add test_package test_package_2 test_script test_script_2
   $ git -c user.name='test' -c user.email='test' commit --quiet --message 'test'
 
 Install the package. This will trigger the test_script via setup() keywords. Try several installation methods:
@@ -36,3 +38,11 @@ Install the package. This will trigger the test_script via setup() keywords. Try
 
   $ pip3 install --quiet "test-package @ file://localhost$(realpath .)#subdirectory=test_package"
   $ pip3 uninstall --quiet --yes test-package
+
+Test other features: multiple scripts, no arguments:
+
+  $ pip3 install --quiet ./test_package_2
+  $ pip3 show test-package-2 | grep -E '(^Summary:|^Author:)'
+  Summary: value1=1 value2=some
+  Author: test-author
+  $ pip3 uninstall --quiet --yes test-package-2

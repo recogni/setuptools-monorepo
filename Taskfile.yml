@@ -23,5 +23,5 @@ tasks:
 
   test:
     cmds:
-      - mypy .
+      - mypy monorepo_loader
       - ./test.sh
