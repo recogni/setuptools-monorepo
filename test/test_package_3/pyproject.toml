@@ -1,0 +1,7 @@
+[project]
+name = "test_package_3"
+version = "0.0.1"
+
+[tool.setuptools_monorepo]
+args = {}
+target = "test_script"

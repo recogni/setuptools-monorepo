@@ -7,8 +7,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from inspect import FullArgSpec
 from types import ModuleType
-from typing import Any, Dict, Iterable, List, Optional, Sequence
-
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Callable, Union
+from .pyproject_reading import read_pyproject, get_args_for_pyproject
 import setuptools
 
 SCRIPT_MARKER = "monorepo_script.toml"
@@ -179,7 +179,7 @@ def _call_script(dist: setuptools.dist.Distribution, value: Dict[str, Any]):
     imported_script.entrypoint(dist, **args)
 
 
-def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value: Any):
+def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value: Any):   
     validation_result = _validate_value(value)
 
     if validation_result is not None:
@@ -192,3 +192,35 @@ def handle_monorepo_package(dist: setuptools.dist.Distribution, attr: str, value
         return
 
     _call_script(dist, value)
+
+
+def _from_file(
+        name: str = "pyproject.toml",
+        dist_name: Optional[str] = None,
+        _load_toml: Optional[Callable[[str], dict[str, Any]] ]= None,
+        **kwargs: Any,
+    ) -> dict:
+    """
+    Read Configuration from pyproject.toml (or similar).
+    Raises exceptions when file is not found or toml is
+    not installed or the file has invalid format or does
+    not contain the [tool.setuptools_monorepo] section.
+    """
+
+    pyproject_data = read_pyproject(name, _load_toml=_load_toml)
+    args = get_args_for_pyproject(pyproject_data, dist_name, kwargs)
+
+    return args
+
+def handle_monorepo_package_pyproject(dist: setuptools.dist.Distribution):
+    import pdb; pdb.set_trace()
+
+    dist_name = dist.metadata.name
+    if not os.path.isfile("pyproject.toml"):
+        return
+    try:
+        config = _from_file(dist_name=dist_name)
+    except LookupError as e:
+        print(f"LookupError: {e}")
+    else:
+        _call_script(dist, config)
