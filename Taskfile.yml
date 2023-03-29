@@ -1,0 +1,27 @@
+version: 3
+
+tasks:
+  check-tools:
+    preconditions:
+      - |
+        black --version
+        isort --version
+
+  lint:
+    deps:
+      - check-tools
+    cmds:
+      - black --check .
+      - isort --check .
+
+  format:
+    deps:
+      - check-tools
+    cmds:
+      - black .
+      - isort .
+
+  test:
+    cmds:
+      - mypy monorepo_loader
+      - ./test.sh

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "wheel", "setuptools-monorepo @ file://${SM_MONOREPO_PACKAGE}" ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "test_package_3"
+version = "0.1.0"
+dynamic = ["description"]
+
+[options]
+packages = "find:"
+
+[tool.setuptools_monorepo.test_script]
+value1 = 999
+value2 = "foo"
